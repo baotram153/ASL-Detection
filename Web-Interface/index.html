@@ -106,7 +106,7 @@
               labelContainer.childNodes[i].innerHTML = classPrediction;
           }
 
-          if (prediction[0].className !== lastCharacter && prediction[0].className !== "None") {
+          if (prediction[0].className !== lastCharacter && prediction[0].className !== "!") {
             lastCharacter = prediction[0].className;
             document.getElementById("main-text").innerHTML = prediction[0].className;
             mostProbableCharacter += prediction[0].className;
