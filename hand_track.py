@@ -41,8 +41,7 @@ def get_bb_normalized (hand_landmarks):
     bb["bottom_right"] = (x_max, y_max)
     return bb
 
-
-OFFSET = 15
+OFFSET = 25
 
 def extract_bb (BGR_img, detection_res):
     hand_landmarks, _ = get_landmarks_handedness (detection_res)
@@ -65,7 +64,7 @@ def hand_detected (detection_res):
     else: return True
 
 def draw_landmarks_on_image(BGR_img, detection_res):
-    if not (hand_detected(detection_res)): return BGR_img
+    if not (hand_detected(detection_res)): return False, BGR_img, {}
 
     hand_landmarks, handedness = get_landmarks_handedness (detection_res)
 
@@ -93,4 +92,4 @@ def draw_landmarks_on_image(BGR_img, detection_res):
     cv.putText(annotated_img, f"{handedness[0].category_name}",
                 (text_x, text_y), cv.FONT_HERSHEY_DUPLEX,
                 FONT_SIZE, HANDEDNESS_TEXT_COLOR, FONT_THICKNESS, cv.LINE_AA)
-    return annotated_img
+    return True, annotated_img, bb
