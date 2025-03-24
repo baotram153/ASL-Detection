@@ -1,0 +1,134 @@
+.index {
+  width: 100%;
+  position: relative;
+  background-color: var(--color-white);
+  height: 753px;
+  overflow: hidden;
+  text-align: center;
+  font-size: var(--font-size-29xl);
+  color: var(--color-black);
+  font-family: var(--font-inter);
+}
+
+.headertitlebar {
+  left: 0;
+  background-color: #eaeaea;
+  width: 100%;
+  height: 70px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20pt;
+  font-weight: 600;
+  font-family: var(--font-inter);
+}
+
+.bottombar {
+  position: absolute;
+  top: 683px;
+  left: 0px;
+  background-color: #eaeaea;
+  width: 100%;
+  height: 70px;
+}
+.by-khiem-nguyen {
+  position: absolute;
+  top: 708px;
+  left: 357px;
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.camframe,
+.camframe {
+  top: 133px;
+  left: 58px;
+  background-color: var(--color-gainsboro);
+  width: 650px;
+  height: 366px;
+  position: relative; /* Add this line to ensure proper positioning of child elements */
+  border-radius: 20px; /* Add this line to apply the corner radius */
+}
+#video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This property ensures the video fills the container while maintaining aspect ratio */
+  top: 0;
+  left: 0;
+  border-radius: 20px;
+}
+
+.main-text-frame {
+  position: absolute;
+  border-radius: var(--br-xl);
+  top: 169px;
+  left: 987px;
+  background-color: #468eec;
+  width: 120px;
+  height: 120px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30pt;
+  font-weight: 600;
+  font-family: var(--font-inter);
+  color: #ffffff;
+
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.top5probframe {
+  position: absolute;
+  top: 200px;
+  left: 1028px;
+}
+.top5probframe {
+  top: 316px;
+  left: 847px;
+  background-color: #ffffff;
+  width: 400px;
+  height: 160px;
+  border-radius: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16pt;
+  font-family: var(--font-inter);
+  color: #468eec;
+
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.logframe {
+  position: absolute;
+  top: 529px;
+  left: 58px;
+  border-radius: 10px;
+  background-color: var(--color-gainsboro);
+  width: 1325px;
+  height: 70px;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 16pt;
+  font-family: var(--font-inter);
+
+  padding-left: 10pt;
+  padding-right: 10pt;
+
+  overflow-x: auto;
+  white-space: nowrap;
+
+  direction: rtl;
+}
+.headertitlebar,
+.titleframe {
+  position: absolute;
+  top: 0;
+  height: 70px;
+}
