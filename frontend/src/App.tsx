@@ -12,9 +12,14 @@ export default function MultiUserChat() {
   const localStreamRef = useRef(null);  // ref to media <MediaStream> obj (camera + mic)
 
   // Map of peerId -> RTCPeerConnection
-  const [peerConnections, setPeerConnections] = useState({});
+  // const [peerConnections, setPeerConnections] = useState({});
+  const peerConnectionsRef = useRef<Record<string, RTCPeerConnection>>({});
+
   // Map of peerId -> MediaStream object
   const [remoteStreams, setRemoteStreams] = useState({});
+
+  // List of peerIds (for rendering)
+  const [peerIds, setPeerIds] = useState([]);
 
   const wsRef = useRef(null);  // ref to websocket connection -> exchange signaling messages (offers, answers, ICE candidates)
 
@@ -35,8 +40,25 @@ export default function MultiUserChat() {
 
   useEffect(() => {
     // Start camera/mic on mount -> not restart when re-rendered
+    
     startLocalStream();
   }, []);
+
+  // useEffect(() => {
+  //   console.log('Peer connections: ', peerConnections);
+  // }, [peerConnections]);
+
+  const addPeerConnection = (peerId: string, pc: RTCPeerConnection) => {
+    peerConnectionsRef.current[peerId] = pc;
+    // if you still need state to trigger a render, you can keep a list of ids:
+    setPeerIds(Object.keys(peerConnectionsRef.current));
+    // console.log('Peer connections at addPeerConnection:', { ...peerConnectionsRef.current });
+  };
+
+  const removePeerConnection = (peerId: string) => {
+    delete peerConnectionsRef.current[peerId];
+    setPeerIds(Object.keys(peerConnectionsRef.current));
+  };
 
   // Helper: create a new RTCPeerConnection for a given peerId
   // and add local tracks + set up event listeners.
@@ -95,9 +117,12 @@ export default function MultiUserChat() {
 
         // Create a new peer connection
         const pc = createPeerConnection(newPeerId);
+        console.log('In new-peer', newPeerId, 'Connection created');
 
         // Insert into local state
-        setPeerConnections((prev) => ({ ...prev, [newPeerId]: pc }));
+        // setPeerConnections((prev) => ({ ...prev, [newPeerId]: pc }));
+        addPeerConnection(newPeerId, pc);
+        // console.log('Peer connections at new-peer handling:', { ...peerConnections });
 
         // Create an offer for the new peer
         const offer = await pc.createOffer();
@@ -117,13 +142,18 @@ export default function MultiUserChat() {
         const fromId = data.from;
         const { offer } = data;
 
+        console.log('Received offer from peer', data);
+
         // If we don’t already have a connection to this peer, create it
-        let pc = peerConnections[fromId];
+        // let pc = peerConnections[fromId];
+        // console.log('Peer connections at offer handling:', { ...peerConnections });
+        let pc = peerConnectionsRef.current[fromId]
         if (!pc) {
           pc = createPeerConnection(fromId);
-          setPeerConnections((prev) => ({ ...prev, [fromId]: pc }));
+          addPeerConnection(fromId, pc);
+          // await setPeerConnections((prev) => ({ ...prev, [fromId]: pc }));
         }
-
+        
         await pc.setRemoteDescription(offer);
 
         // Create an answer
@@ -140,18 +170,29 @@ export default function MultiUserChat() {
       }
 
       case 'answer': {
+        console.log('Received answer from peer', data);
         const fromId = data.from;
         const { answer } = data;
-        const pc = peerConnections[fromId];
-        if (!pc) return;
+        // const pc = peerConnections[fromId];
+        const pc = peerConnectionsRef.current[fromId];
+        console.log('Data: ', data)
+        // console.log('Peer connections at answer handling:', { ...peerConnections });
+        if (!pc) {
+          console.log('No peer connection for answer', fromId);
+          return;
+        }
+        console.log('Set remote description for peer', fromId);
         await pc.setRemoteDescription(answer);
+        console.log('Set remote description for peer', fromId);
+        console.log('Received answer from peer', fromId);
         break;
       }
 
       case 'ice-candidate': {
         const fromId = data.from;
         const { candidate } = data;
-        const pc = peerConnections[fromId];
+        // const pc = peerConnections[fromId];
+        const pc = peerConnectionsRef.current[fromId];
         if (!pc || !candidate) return;
         try {
           console.log('Adding ICE candidate', candidate);
@@ -165,16 +206,13 @@ export default function MultiUserChat() {
       case 'peer-left': {
         const departedId = data.clientId;
         // Close and remove that peer’s connection
-        const pc = peerConnections[departedId];
+        // const pc = peerConnections[departedId];
+        const pc = peerConnectionsRef.current[departedId];
         if (pc) {
           pc.close();
         }
 
-        setPeerConnections((prev) => {
-          const newMap = { ...prev };
-          delete newMap[departedId];
-          return newMap;
-        });
+        
 
         setRemoteStreams((prev) => {
           const newMap = { ...prev };
@@ -194,8 +232,9 @@ export default function MultiUserChat() {
   const joinRoom = async () => {
     if (!roomId) return;
     setJoinedRoom(true);
-
-    const ws = new WebSocket(`ws://localhost:8000/ws/${roomId}`);
+ 	
+    // const ws = new WebSocket(`ws://localhost:3000/ws/${roomId}`);
+    const ws = new WebSocket(`wss://yolosmarthomeapi.ticklab.site/ws/${roomId}`); // Use wss for secure connection
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -271,4 +310,14 @@ function VideoPlayer({ stream, peerId }) {
   );
 }
 
+// domain: yolosmarthomeapi.ticklab.site
 
+// Create a simple websocket establishment
+
+// import React, { useEffect, useRef } from 'react';
+// import { useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+
+// export default function App() {
+//   const ws = await new WebSocket('ws://yolosmarthomeapi.ticklab.site/ws/roomId');
+// }

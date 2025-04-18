@@ -18,11 +18,9 @@ app.add_middleware(
 # Data structure:
 # rooms = {
 #   "roomId123": {
-#       "clients": {
-#           "clientIdA": WebSocket,
-#           "clientIdB": WebSocket,
-#           ...
-#       }
+#       "clientIdA": WebSocket,
+#       "clientIdB": WebSocket,
+#       ...
 #   }
 # }
 rooms: Dict[str, Dict[str, WebSocket]] = {}
@@ -78,11 +76,13 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 target_id = data.get("target")
                 if target_id in rooms[room_id]:
                     # forward to the specific target
-                    await rooms[room_id][target_id].send_text(json.dumps({
+                    message = {
                         "type": msg_type,
                         "from": client_id,
                         **{k: v for k, v in data.items() if k not in ["type", "target"]}
-                    }))
+                    }
+                    print(f"Forwarding {msg_type} from {client_id} to {target_id}")
+                    await rooms[room_id][target_id].send_text(json.dumps(message))
             else:
                 # Handle other message types if needed
                 pass
