@@ -27,6 +27,11 @@ app.add_middleware(
 # }
 rooms: Dict[str, Dict[str, WebSocket]] = {}
 
+# test if the server is running
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     """
