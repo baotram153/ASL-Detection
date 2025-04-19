@@ -1,9 +1,47 @@
 import json
 import uuid
 from typing import List, Dict
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 import uvicorn
+
+import numpy as np
+import cv2 as cv
+import os
+from data_preprocess import DataPreprocessor
+from keras.models import load_model
+from tensorflow.keras.layers import DepthwiseConv2D as KDepthwiseConv2D
+from trainer import Trainer
+
+# specify path to model
+model_dir = "model"
+model_file = "keras_model.h5"
+label_file = "labels.txt"
+
+model_path = os.path.join(model_dir, model_file)
+label_path = os.path.join(model_dir, label_file)
+data_preprocessor = DataPreprocessor()
+data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+
+# load the model
+class DepthwiseConv2DIgnoreGroups(KDepthwiseConv2D):
+    def __init__(self, *args, groups=None, **kwargs):
+        # discard the `groups` kwarg
+        super().__init__(*args, **kwargs)
+
+model = load_model(
+  model_path,
+  custom_objects={"DepthwiseConv2D": DepthwiseConv2DIgnoreGroups}
+)
+
+# Load the labels
+class_names = open(label_path, "r").readlines()
+
+trainer = Trainer(data_preprocessor, model, class_names, None)
+
 
 app = FastAPI()
 
@@ -29,6 +67,40 @@ rooms: Dict[str, Dict[str, WebSocket]] = {}
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+@app.post("/asl")
+async def asl(
+    image: UploadFile = File(...),          # the JPEG blob
+    peerId: str      = Form(...)            # your peerId field
+):
+    '''
+    Detect character from frame sent from client
+    Params:
+        -input : blob
+        -output : json
+    '''
+    # Read raw bytes
+    image_bytes = await image.read()              # image_bytes is a bytes object
+
+    # Convert bytes → numpy array → OpenCV BGR image
+    nparr = np.frombuffer(image_bytes, np.uint8)
+    bgr = cv.imdecode(nparr, cv.IMREAD_COLOR)
+    if bgr is None:
+        return JSONResponse({"error": "could not decode image"}, status_code=400)
+    
+    detected, label, confidence = trainer.preprocess_and_predict(bgr)
+    print(f"Detected: {detected}")
+    print(f"Label: {label}")
+    print(f"Confidence: {confidence}")
+    confidence = float(confidence) if confidence is not None else 0.0
+    
+    return JSONResponse({
+        "detected": detected,
+        "label": label,
+        "confidence": confidence,
+        "peerId": peerId
+    })
+    
 
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
