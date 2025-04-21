@@ -1,6 +1,16 @@
-## Run the Backend folder
+# ASL Meeting Application
+
+## Overview
+This is the Backend code for a Video Meeting Application, in which user can enable ASL (American Sign Language) Detection functionality (characters recognition from hand gestures).
+
+## Related Repositories
+- Frontend: https://github.com/baotram153/ASL-Detection-FE.git
+
+## How to run the Backend code?
 1. Create python virtual environment and activate that environment
 ```sh
+git clone https://github.com/baotram153/ASL-Detection.git
+cd ASL-Detection
 python -m venv env
 ./env/Scripts/activate
 ```
@@ -11,15 +21,7 @@ pip install -r requirements.txt
 ```
 
 3. Run the Backend server
-
-## Run the Frontend folder
-1. Install packages
 ```sh
-cd frontend
-npm i
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker server:app
 ```
-
-2. Run the Frontend server
-```sh
-npm run dev
-```
+- The number of workers should ideally be your number of cpu cores x2+1
