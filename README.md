@@ -1,7 +1,8 @@
 # ASL Meeting Application
 
 ## Overview
-This is the Backend code for a Video Meeting Application, in which user can enable ASL (American Sign Language) Detection functionality (characters recognition from hand gestures).
+- This is the Backend code for a Video Meeting Application, in which user can enable ASL (American Sign Language) Detection functionality (characters recognition from hand gestures).
+- You can test the application at: https://aslmeeting.ticklab.site/
 
 ## Related Repositories
 - Frontend: https://github.com/baotram153/ASL-Detection-FE.git
